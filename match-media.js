@@ -1,10 +1,10 @@
 /*
  * Angular matchMedia Module
- * Version 0.1.0
+ * Version 0.2.0
  * Uses Bootstrap 3 breakpoint sizes
  * Exposes service "screenSize" which returns true if breakpoint(s) matches.
- * Example: $scope.desktop = screenSize.is('md,lg');
  * Includes matchMedia polyfill for backward compatibility.
+ * Copyright © 2013-2014 Jack Tarantino.
 **/
 
 angular.module('matchMedia', [])
