@@ -72,16 +72,16 @@ angular.module('matchMedia', [])
 .service('screenSize', function () {
   'use strict';
 
-  var rules = {
+  var defaultRules = {
     lg : '(min-width: 1200px)',
     md : '(min-width: 992px) and (max-width: 1199px)',
     sm : '(min-width: 768px) and (max-width: 991px)',
     xs : '(max-width: 767px)'
   };
 
-  this.rules = rules;
-
   this.is = function (list) {
+    var rules = this.rules || defaultRules;
+    
     // validate that we're getting a string or array.
     if (typeof list !== 'string' && typeof list !== 'array') {
       throw new Error('screenSize requires array or comma-separated list');
