@@ -1,0 +1,23 @@
+{
+  "name": "angular-bootstrap-media-queries",
+  "version": "0.0.1",
+  "homepage": "https://github.com/jacopotarantino/angular-match-media",
+  "authors": [
+    "Jack Tarantino"
+  ],
+  "description": "Provides an Angular service that returns true if the current screen width matches or false if not. Uses the screen widths from Twitter Bootstrap 3.",
+  "main": "match-media.js",
+  "keywords": [
+    "angularjs",
+    "angular",
+    "bootstrap"
+  ],
+  "license": "Creative Commons Attribution-ShareAlike 4.0 International License",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
