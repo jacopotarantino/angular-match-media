@@ -4,6 +4,11 @@ Provides an Angular service that returns true if the current screen width matche
 
 ## Installation
 
+Download the component via bower:
+```bash
+bower install --save angular-media-queries
+```
+
 Include AngularJS on the page and then include this script. If possible, include these scripts in the footer of your site before the closing `</body>` tag.
 ```html
 <script type='text/javascript' src='/static/path/to/angular.min.js'></script>
@@ -76,7 +81,7 @@ angular.module('myApp', ['matchMedia'])
   if (screenSize.is('retina')) {
     // switch out regular images for hi-dpi ones
   }
-  
+
   if (screenSize.is('superJumbo')) {
     // do something for enormous screens
   }

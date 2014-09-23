@@ -1,6 +1,6 @@
 {
-  "name": "angular-match-media",
-  "version": "0.2.2",
+  "name": "angular-media-queries",
+  "version": "0.2.3",
   "authors": [
     "Jack <jack@ofspades.com>"
   ],
