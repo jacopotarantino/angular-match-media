@@ -69,7 +69,7 @@ angular.module('matchMedia', [])
 
 // takes a comma-separated list of screen sizes to match.
 // returns true if any of them match.
-.service('screenSize', function screenSize() {
+.service('screenSize', function screenSize($rootScope) {
   'use strict';
 
   var defaultRules = {
@@ -78,7 +78,22 @@ angular.module('matchMedia', [])
     sm : '(min-width: 768px) and (max-width: 991px)',
     xs : '(max-width: 767px)'
   };
-
+  
+  var that = this;
+  
+  // Executes Angular $apply in a safe way
+  var safeApply = function(fn, scope) {
+    scope = scope || $rootScope;
+    var phase = scope.$root.$$phase;
+    if(phase === '$apply' || phase === '$digest') {
+        if(fn && (typeof(fn) === 'function')) {
+          fn();
+        }
+    } else {
+       scope.$apply(fn);
+    }
+  };
+  
   this.is = function (list) {
     var rules = this.rules || defaultRules;
 
@@ -97,5 +112,16 @@ angular.module('matchMedia', [])
         return true;
       }
     });
+  };
+
+  // Returns the result of calling 'is' AND executes the 'callback' function with
+  // the result of calling 'is' on window resize. The 'scope' parameter
+  // is optional. If it's not passed in, '$rootScope' is used.
+  this.on = function (list, callback, scope) {
+    window.addEventListener('resize', function(event){
+        safeApply(callback(that.is(list)), scope);
+    });
+    
+    return that.is(list);
   };
 });

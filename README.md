@@ -1,6 +1,6 @@
 # Angular matchMedia Module
 
-Provides an Angular service that returns true if the current screen width matches or false if not. Uses the screen widths from Twitter Bootstrap 3.
+Provides an Angular service that returns true if the current screen width matches or false if not. Uses the screen widths predefined in Twitter Bootstrap 3 or a customized size you define. There is a staic method `is` which checks for a match on page load and a dynamic method `on` which checks for a match and updates the value on window resize.
 
 ## Installation
 
@@ -24,13 +24,13 @@ angular.module('myApp', ['matchMedia'])
 
 ### In a Controller
 
-Use the service to determine if you should perform certain cpu/network-intensive actions:
+Use the service's `is` method to determine if you should perform certain cpu/network-intensive actions:
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
   var data = complicatedChartData;
 
-  if (screensize.is('xs, sm')) {
+  if (screenSize.is('xs, sm')) {
     // it's a mobile device so fetch a small image
     $http.post('/imageGenerator', data)
     .success(function (response) {
@@ -51,11 +51,20 @@ angular.module('myApp', ['matchMedia'])
 
 In your controller you can create variables that correspond to screen sizes. For example add the following to your controller:
 ```javascript
+// Using static method `is`
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
-  $scope.desktop = screenSize.is('md,lg');
+  $scope.desktop = screenSize.is('md, lg');
   $scope.mobile = screenSize.is('xs, sm');
 }]);
+
+// Using dynamic method `on`, which will set the variables initially and then update the variable on window resize
+$scope.desktop = screenSize.on('md, lg', function(match){
+    $scope.desktop = match;
+});
+$scope.mobile = screenSize.on('xs, sm', function(match){
+    $scope.mobile = match;
+});
 ```
 
 Then in your HTML you can show or hide content using ngIf or similar directives that take an Angular expression:
@@ -104,4 +113,3 @@ This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 Inte
 * Write tests.
 * Add a simple directive wrapper for ng-if.
 * Add Grunt tasks.
-* Move to bower?
