@@ -71,11 +71,10 @@ angular.module('matchMedia', [])
     'use strict';
 
     var defaultRules = {
-        xl: '(min-width: 1200px)',
-        lg: '(min-width: 992px) and (max-width: 1199px)',
-        md: '(min-width: 768px) and (max-width: 991px)',
-        sm: '(min-width: 480px) and (max-width: 767px)',
-        xs: '(max-width: 479px)'
+        lg: '(min-width: 1200px)',
+        md: '(min-width: 992px) and (max-width: 1199px)',
+        sm: '(min-width: 768px) and (max-width: 991px)',
+        xs: '(max-width: 767px)'
     };
 
     var that = this;
@@ -97,7 +96,7 @@ angular.module('matchMedia', [])
         var rules = this.rules || defaultRules;
 
         // validate that we're getting a string or array.
-        if (typeof list !== 'string' && Object.prototype.toString.call( list ) === '[object Array]') {
+        if (typeof list !== 'string' && Object.prototype.toString.call(list) === '[object Array]') {
             throw new Error('screenSize requires array or comma-separated list');
         }
 
