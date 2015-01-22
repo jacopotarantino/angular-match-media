@@ -47,6 +47,14 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
+Or if you only want it to fire as long as one screen size range is active:
+
+    // WIll fire as long as the screen is size between 768px and 991px
+    screenSize.onScreensizeActuallyIs('sm', function() {
+        console.log('Media breakpoint SM touched');
+        $scope.$emit('myapp::refreshEqualizer');
+    });
+
 ### ngIf Example
 
 In your controller you can create variables that correspond to screen sizes. For example add the following to your controller:

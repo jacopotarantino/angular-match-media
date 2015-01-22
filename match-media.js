@@ -122,4 +122,14 @@ angular.module('matchMedia', [])
 
     return that.is(list);
   };
+
+  // Executes the callback if any of given screen sizes occur.
+  // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
+  this.onScreensizeActuallyIs = function(list, callback, scope) {
+    window.addEventListener('resize', function(event) {
+      if (that.is(list) === true) {
+        safeApply(callback(that.is(list)), scope);
+      }
+    });
+  };
 }]);
