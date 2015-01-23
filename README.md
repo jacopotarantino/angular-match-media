@@ -24,7 +24,7 @@ angular.module('myApp', ['matchMedia'])
 
 ### In a Controller
 
-Use the service's `is` method to determine if you should perform certain cpu/network-intensive actions:
+Use the service's `is` method to determine if you should perform certain cpu/network-intensive actions. The callback fed to `.on` will execute on every window resize and takes the truthiness of the media query as its first argument.
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
@@ -47,17 +47,19 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
-Or if you only want it to fire as long as one screen size range is active:
+Or if you only want the callback to fire while in the correct screensize, use the `when` method:
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
- 
+
     // Will fire as long as the screen is size between 768px and 991px
-    screenSize.onScreensizeActuallyIs('sm', function() {
+    screenSize.when('sm', function() {
         console.log('Your screen size at the moment is between 768px and 991px.');
     });
 }]);
 ```
+
+Be careful using either of these methods as `resize` events fire often and can bog down your application if not handled properly.
 
 ### ngIf Example
 

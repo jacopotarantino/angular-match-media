@@ -112,9 +112,9 @@ angular.module('matchMedia', [])
     });
   };
 
-  // Returns the result of calling 'is' AND executes the 'callback' function with
-  // the result of calling 'is' on window resize. The 'scope' parameter
-  // is optional. If it's not passed in, '$rootScope' is used.
+  // Executes the callback function on window resize with the match truthiness as the first argument.
+  // Returns the current match truthiness.
+  // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
   this.on = function(list, callback, scope) {
     window.addEventListener('resize', function(event) {
       safeApply(callback(that.is(list)), scope);
@@ -123,13 +123,15 @@ angular.module('matchMedia', [])
     return that.is(list);
   };
 
-  // Executes the callback if any of given screen sizes occur.
+  // Executes the callback only when inside of the particular screensize.
   // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
-  this.onScreensizeActuallyIs = function(list, callback, scope) {
+  this.when = function(list, callback, scope) {
     window.addEventListener('resize', function(event) {
       if (that.is(list) === true) {
         safeApply(callback(that.is(list)), scope);
       }
     });
+
+    return that.is(list);
   };
 }]);
