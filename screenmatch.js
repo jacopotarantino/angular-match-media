@@ -107,7 +107,7 @@
         //Returns: An object with the following properties:
         //         active : always reflects the truthiness of the match
         //         unbind() : deregister the watcher
-        function bind(list, callback, scope) {
+        function bind(list, scope) {
             var prev = null;
             var match = is(list); // set truthiness of match
 
