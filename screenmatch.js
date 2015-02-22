@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('angular.screenmatch')
+        .module('angular.screenmatch', [])
         .run(polyfillInjector)
         .provider('screenmatchConfig', screenmatchConfig)
         .factory('screenmatch', screenmatch)
@@ -98,39 +98,42 @@
         //Method: Passes a list of values to is() to compare truthiness.
         //        If nobind is false (default), also watches for $window resize.
         //        On resize, evaluates if the truthiness has changed.
-        //        Fires a callback if there is a change, returning truthiness.
         //
-        //        Note : if nobind is true, the callback never fires.
+        //        Note : if nobind is true, there is no update on resize.
         //
         //Args: [1] String (passed to is())
-        //      [2] Func for callback
-        //      [3] Scope, the scope to attach the listener to
+        //      [2] Scope, the scope to attach the listener to
         //
-        //Returns: True if any of the values is a match, else False.
-        //         Callback on resize, also returns True/False
-        //
+        //Returns: An object with the following properties:
+        //         active : always reflects the truthiness of the match
+        //         unbind() : deregister the watcher
         function bind(list, callback, scope) {
             var prev = null;
             var match = is(list); // set truthiness of match
 
-            if (!nobind && angular.isFunction(callback)) {
+            var bound = {
+                active : match,
+                unbind: null
+            };
+
+            if (!nobind) {
 
                 scope = scope || $rootScope;
-                scope.$on('screenmatch::resize', function () {
+                var watcher = scope.$on('screenmatch::resize', function () {
 
                     prev = match;
                     match = is(list);
 
-                    //only callback if there is a change of truthiness from last check
-                    //prevents unnecessary firing of the callback
                     if (prev !== match) {
-                         $timeout(function() {
-                            callback(match);
-                        });
+                        bound.active = match; //update truthiness
                     }
                 });
+
+                bound.unbind = function () {
+                    watcher(); //to deregister watcher
+                };
             }
-            return match;
+            return bound;
         }
 
 
@@ -254,12 +257,10 @@
 
             var size = attrs.asmScreen;
 
-            var match = screenmatch.bind(size, function (val) {
-                match = val;
-            }, scope);
+            var match = screenmatch.bind(size, scope);
 
             attrs.ngIf = function() {
-                return match;
+                return match.active;
             };
 
             ngIf.link.apply(ngIf, arguments);
