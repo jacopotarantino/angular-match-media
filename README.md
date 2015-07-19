@@ -59,20 +59,6 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
-### Filter
-
-Operate on string values with the filter: Have the placeholder sign % replaced by the actual media query rule name.
-
-#### Example:
-```html
-    <div ng-include="'/views/_partials/_team_%.html' | media"></div>
-```
-
-#### Extended example:
-```html
-    <div ng-include="'/views/_partials/_team_%.html' | media:{mobile:['ti','xs','sm'], desktop:['md','lg']}"></div>
-```
-
 ### ngIf Example
 
 In your controller you can create variables that correspond to screen sizes. For example add the following to your controller:
