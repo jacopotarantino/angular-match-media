@@ -1,5 +1,3 @@
-'use strict';
-
 /*
  * Angular matchMedia Module
  * Version 0.2.2
@@ -9,16 +7,17 @@
  * Copyright © 2013-2014 Jack Tarantino.
  **/
 
-var app = angular.module('matchMedia', []);
+angular.module('matchMedia', [])
 
 
-app.run(function initializeNgMatchMedia() {
+.run(function initializeNgMatchMedia() {
   /*! matchMedia() polyfill - Test a CSS media type/query in JS.
    * Authors & copyright (c) 2012: Scott Jehl, Paul Irish, Nicholas Zakas, David Knight.
    * Dual MIT/BSD license
    **/
 
   window.matchMedia || (window.matchMedia = function matchMediaPolyfill() {
+    'use strict';
 
     // For browsers that support matchMedium api such as IE 9 and webkit
     var styleMedia = (window.styleMedia || window.media);
@@ -63,12 +62,13 @@ app.run(function initializeNgMatchMedia() {
       };
     };
   }());
-});
+})
 
 
 // takes a comma-separated list of screen sizes to match.
 // returns true if any of them match.
-app.service('screenSize', ['$rootScope', function screenSize($rootScope) {
+.service('screenSize', ["$rootScope", function screenSize($rootScope) {
+  'use strict';
 
   var defaultRules = {
     lg: '(min-width: 1200px)',
@@ -105,29 +105,18 @@ app.service('screenSize', ['$rootScope', function screenSize($rootScope) {
       list = list.split(/\s*,\s*/);
     }
 
-    return list.some(function(size) {
+    return list.some(function(size, index, arr) {
       if (window.matchMedia(rules[size]).matches) {
         return true;
       }
     });
   };
 
-  // Return the actual size (it's string name defined in the rules)
-  this.get = function() {
-    var rules = this.rules || defaultRules;
-
-    for (var prop in rules) { 
-      if (window.matchMedia(rules[prop]).matches) {
-        return prop;
-      }
-    }
-  };
-
   // Returns the result of calling 'is' AND executes the 'callback' function with
   // the result of calling 'is' on window resize. The 'scope' parameter
   // is optional. If it's not passed in, '$rootScope' is used.
   this.on = function(list, callback, scope) {
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function(event) {
       safeApply(callback(that.is(list)), scope);
     });
 
@@ -137,43 +126,10 @@ app.service('screenSize', ['$rootScope', function screenSize($rootScope) {
   // Executes the callback if any of given screen sizes occur.
   // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
   this.onScreensizeActuallyIs = function(list, callback, scope) {
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function(event) {
       if (that.is(list) === true) {
         safeApply(callback(that.is(list)), scope);
       }
     });
   };
-}]);
-
-// Added my Matthias Max
-// Date: 2015-07-17
-// Version: 1.0
-app.filter('media', ['screenSize', function(screenSize) {
-
-    var mediaFilter = function(inputValue, options) {
-
-      // Get actual size
-      var size = screenSize.get();
-
-      if (options) {
-        
-        for (var prop in options) { 
-          var index  = options[prop].indexOf(size);
-          if (index >= 0) {
-            return inputValue.replace('%', prop);
-          }
-        }
-        return inputValue.replace('%', size);
-
-        // console.info('options:' + JSON.stringify(options));
-      } else {
-        return inputValue.replace('%', size);
-      }
-    };
-
-    // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
-    // have to explicit define this behavior.
-    mediaFilter.$stateful = true;
-    return mediaFilter;
-
 }]);
