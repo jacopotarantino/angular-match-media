@@ -165,6 +165,7 @@ app.filter('media', ['screenSize', function(screenSize) {
         }
         return inputValue.replace('%', size);
 
+        // console.info('options:' + JSON.stringify(options));
       } else {
         return inputValue.replace('%', size);
       }
