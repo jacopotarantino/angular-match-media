@@ -114,6 +114,17 @@ app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
     });
   };
 
+  // Return the actual size (it's string name defined in the rules)
+  this.get = function() {
+    var rules = this.rules || defaultRules;
+
+    for (var prop in rules) { 
+      if (window.matchMedia(rules[prop]).matches) {
+        return prop;
+      }
+    }
+  };
+
   // Executes the callback function on window resize with the match truthiness as the first argument.
   // Returns the current match truthiness.
   // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
@@ -136,6 +147,61 @@ app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
 
     return that.is(list);
   };
+}]);
+
+// Added my Matthias Max
+// Date: 2015-07-17
+// Version: 1.0
+app.filter('media', ['screenSize', function(screenSize) {
+
+    var mediaFilter = function(inputValue, options) {
+
+      // Get actual size
+      var size = screenSize.get();
+
+      // Variable for the value being return (either a size/rule name or a group name)
+      var returnedName = '';
+
+      if (options) {
+        
+        // Replace placeholder with group name in input value
+        if (options.groups) {
+
+          for (var prop in options.groups) { 
+            var index = options.groups[prop].indexOf(size);
+            if (index >= 0) {
+              returnedName = prop;
+            }
+          }
+
+          // If no group name is found for size use the size itself
+          if (returnedName === '') {
+            returnedName = size;
+          }
+          
+        }
+
+        // Replace or return size/rule name?
+        if (options.replace && typeof options.replace === 'string' && options.replace.length > 0) {
+          return inputValue.replace(options.replace, returnedName);
+        } else {
+          return returnedName;
+        }
+
+      } else {
+
+        // Return the size/rule name
+        return size;
+
+      }
+
+    };
+
+    // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
+    // have to explicit define this behavior.
+    mediaFilter.$stateful = true;
+    return mediaFilter;
+
 }]);
 
 })();
