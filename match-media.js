@@ -1,23 +1,26 @@
+(function() {
+    'use strict';
+
 /*
  * Angular matchMedia Module
- * Version 0.2.2
+ * Version 0.4.1
  * Uses Bootstrap 3 breakpoint sizes
  * Exposes service "screenSize" which returns true if breakpoint(s) matches.
  * Includes matchMedia polyfill for backward compatibility.
  * Copyright © 2013-2014 Jack Tarantino.
  **/
 
-angular.module('matchMedia', [])
+
+var app = angular.module('matchMedia', []);
 
 
-.run(function initializeNgMatchMedia() {
+app.run(function initializeNgMatchMedia() {
   /*! matchMedia() polyfill - Test a CSS media type/query in JS.
    * Authors & copyright (c) 2012: Scott Jehl, Paul Irish, Nicholas Zakas, David Knight.
    * Dual MIT/BSD license
    **/
 
   window.matchMedia || (window.matchMedia = function matchMediaPolyfill() {
-    'use strict';
 
     // For browsers that support matchMedium api such as IE 9 and webkit
     var styleMedia = (window.styleMedia || window.media);
@@ -62,13 +65,12 @@ angular.module('matchMedia', [])
       };
     };
   }());
-})
+});
 
 
 // takes a comma-separated list of screen sizes to match.
 // returns true if any of them match.
-.service('screenSize', ["$rootScope", function screenSize($rootScope) {
-  'use strict';
+app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
 
   var defaultRules = {
     lg: '(min-width: 1200px)',
@@ -135,3 +137,5 @@ angular.module('matchMedia', [])
     return that.is(list);
   };
 }]);
+
+})();
