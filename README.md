@@ -140,6 +140,7 @@ This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 Inte
 * Polyfill from https://github.com/paulirish/matchMedia.js/
 * @jacopotarantino
 * @thatmarvin
+* Matthias Max @bitflowertweets
 
 ## Todo
 

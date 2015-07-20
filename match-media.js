@@ -149,9 +149,6 @@ app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
   };
 }]);
 
-// Added my Matthias Max
-// Date: 2015-07-17
-// Version: 1.0
 app.filter('media', ['screenSize', function(screenSize) {
 
     var mediaFilter = function(inputValue, options) {
@@ -162,38 +159,36 @@ app.filter('media', ['screenSize', function(screenSize) {
       // Variable for the value being return (either a size/rule name or a group name)
       var returnedName = '';
 
-      if (options) {
-        
-        // Replace placeholder with group name in input value
-        if (options.groups) {
-
-          for (var prop in options.groups) { 
-            var index = options.groups[prop].indexOf(size);
-            if (index >= 0) {
-              returnedName = prop;
-            }
-          }
-
-          // If no group name is found for size use the size itself
-          if (returnedName === '') {
-            returnedName = size;
-          }
-          
-        }
-
-        // Replace or return size/rule name?
-        if (options.replace && typeof options.replace === 'string' && options.replace.length > 0) {
-          return inputValue.replace(options.replace, returnedName);
-        } else {
-          return returnedName;
-        }
-
-      } else {
+      if (!options) {
 
         // Return the size/rule name
         return size;
 
       }
+        
+    // Replace placeholder with group name in input value
+    if (options.groups) {
+
+      for (var prop in options.groups) { 
+        var index = options.groups[prop].indexOf(size);
+        if (index >= 0) {
+          returnedName = prop;
+        }
+      }
+
+      // If no group name is found for size use the size itself
+      if (returnedName === '') {
+        returnedName = size;
+      }
+      
+    }
+
+    // Replace or return size/rule name?
+    if (options.replace && typeof options.replace === 'string' && options.replace.length > 0) {
+      return inputValue.replace(options.replace, returnedName);
+    } else {
+      return returnedName;
+    }
 
     };
 
