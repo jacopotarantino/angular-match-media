@@ -61,6 +61,25 @@ angular.module('myApp', ['matchMedia'])
 
 Be careful using either of these methods as `resize` events fire often and can bog down your application if not handled properly.
 
+### Filter
+
+Operate on string values with the filter: Have the placeholder sign % replaced by the actual media query rule name.
+
+#### Example:
+```html
+    <div> {{'Your screen size is: ' | media }} "</div>
+```
+
+#### Example with replace:
+```html
+    <div ng-include="'/views/_partials/_team_%.html' | media:{ replace: '%' }"></div>
+```
+
+#### Extended example:
+```html
+    <div ng-include="'/views/_partials/_team_%.html' | media:{ replace: '%', groups: { mobile:['ti','xs','sm'], desktop:['md','lg'] } }"></div>
+```
+
 ### ngIf Example
 
 In your controller you can create variables that correspond to screen sizes. For example add the following to your controller:
@@ -121,6 +140,7 @@ This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 Inte
 * Polyfill from https://github.com/paulirish/matchMedia.js/
 * @jacopotarantino
 * @thatmarvin
+* Matthias Max @bitflowertweets
 
 ## Todo
 

@@ -1,23 +1,26 @@
+(function() {
+    'use strict';
+
 /*
  * Angular matchMedia Module
- * Version 0.2.2
+ * Version 0.4.1
  * Uses Bootstrap 3 breakpoint sizes
  * Exposes service "screenSize" which returns true if breakpoint(s) matches.
  * Includes matchMedia polyfill for backward compatibility.
  * Copyright © 2013-2014 Jack Tarantino.
  **/
 
-angular.module('matchMedia', [])
+
+var app = angular.module('matchMedia', []);
 
 
-.run(function initializeNgMatchMedia() {
+app.run(function initializeNgMatchMedia() {
   /*! matchMedia() polyfill - Test a CSS media type/query in JS.
    * Authors & copyright (c) 2012: Scott Jehl, Paul Irish, Nicholas Zakas, David Knight.
    * Dual MIT/BSD license
    **/
 
   window.matchMedia || (window.matchMedia = function matchMediaPolyfill() {
-    'use strict';
 
     // For browsers that support matchMedium api such as IE 9 and webkit
     var styleMedia = (window.styleMedia || window.media);
@@ -62,13 +65,12 @@ angular.module('matchMedia', [])
       };
     };
   }());
-})
+});
 
 
 // takes a comma-separated list of screen sizes to match.
 // returns true if any of them match.
-.service('screenSize', ["$rootScope", function screenSize($rootScope) {
-  'use strict';
+app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
 
   var defaultRules = {
     lg: '(min-width: 1200px)',
@@ -112,6 +114,17 @@ angular.module('matchMedia', [])
     });
   };
 
+  // Return the actual size (it's string name defined in the rules)
+  this.get = function() {
+    var rules = this.rules || defaultRules;
+
+    for (var prop in rules) { 
+      if (window.matchMedia(rules[prop]).matches) {
+        return prop;
+      }
+    }
+  };
+
   // Executes the callback function on window resize with the match truthiness as the first argument.
   // Returns the current match truthiness.
   // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
@@ -135,3 +148,55 @@ angular.module('matchMedia', [])
     return that.is(list);
   };
 }]);
+
+app.filter('media', ['screenSize', function(screenSize) {
+
+    var mediaFilter = function(inputValue, options) {
+
+      // Get actual size
+      var size = screenSize.get();
+
+      // Variable for the value being return (either a size/rule name or a group name)
+      var returnedName = '';
+
+      if (!options) {
+
+        // Return the size/rule name
+        return size;
+
+      }
+        
+    // Replace placeholder with group name in input value
+    if (options.groups) {
+
+      for (var prop in options.groups) { 
+        var index = options.groups[prop].indexOf(size);
+        if (index >= 0) {
+          returnedName = prop;
+        }
+      }
+
+      // If no group name is found for size use the size itself
+      if (returnedName === '') {
+        returnedName = size;
+      }
+      
+    }
+
+    // Replace or return size/rule name?
+    if (options.replace && typeof options.replace === 'string' && options.replace.length > 0) {
+      return inputValue.replace(options.replace, returnedName);
+    } else {
+      return returnedName;
+    }
+
+    };
+
+    // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
+    // have to explicit define this behavior.
+    mediaFilter.$stateful = true;
+    return mediaFilter;
+
+}]);
+
+})();
