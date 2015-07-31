@@ -3,7 +3,7 @@
 
 /*
  * Angular matchMedia Module
- * Version 0.4.1
+ * Version 0.4.2
  * Uses Bootstrap 3 breakpoint sizes
  * Exposes service "screenSize" which returns true if breakpoint(s) matches.
  * Includes matchMedia polyfill for backward compatibility.
@@ -81,6 +81,9 @@ app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
 
   var that = this;
 
+  // Backup window width for iOS bug
+  this.innerWidth = window.innerWidth;
+
   // Executes Angular $apply in a safe way
   var safeApply = function(fn, scope) {
     scope = scope || $rootScope;
@@ -129,7 +132,7 @@ app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
   // Returns the current match truthiness.
   // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
   this.on = function(list, callback, scope) {
-    window.addEventListener('resize', function(event) {
+    window.addEventListener('resize', function() {
       safeApply(callback(that.is(list)), scope);
     });
 
@@ -139,10 +142,16 @@ app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
   // Executes the callback only when inside of the particular screensize.
   // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
   this.when = function(list, callback, scope) {
-    window.addEventListener('resize', function(event) {
-      if (that.is(list) === true) {
-        safeApply(callback(that.is(list)), scope);
+    window.addEventListener('resize', function() {
+
+      // iOS fix: Has the window size really changed? (iOS sends resize event on scroll too)
+      if (window.innerWidth !== that.innerWidth) {
+        console.info('resize triggered');
+        if (that.is(list) === true) {
+          safeApply(callback(that.is(list)), scope);
+        }        
       }
+
     });
 
     return that.is(list);
