@@ -81,6 +81,9 @@
 
     var that = this;
 
+    // Backup window width for iOS bug
+    this.innerWidth = window.innerWidth;
+
     // Executes Angular $apply in a safe way
     var safeApply = function(fn, scope) {
       scope = scope || $rootScope;
@@ -140,9 +143,14 @@
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
     this.when = function(list, callback, scope) {
       window.addEventListener('resize', function(event) {
-        if (that.is(list) === true) {
-          safeApply(callback(that.is(list)), scope);
-        }
+
+        // iOS fix: Has the window size really changed? (iOS sends resize event on scroll too)
+        if (window.innerWidth !== that.innerWidth) {
+          if (that.is(list) === true) {
+            safeApply(callback(that.is(list)), scope);
+          }      
+        }        
+
       });
 
       return that.is(list);
