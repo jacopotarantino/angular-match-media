@@ -3,7 +3,7 @@
 
   /*
    * Angular matchMedia Module
-   * Version 0.4.1
+   * Version 0.4.2
    * Uses Bootstrap 3 breakpoint sizes
    * Exposes service "screenSize" which returns true if breakpoint(s) matches.
    * Includes matchMedia polyfill for backward compatibility.
