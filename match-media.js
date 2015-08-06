@@ -10,10 +10,8 @@
    * Copyright © 2013-2014 Jack Tarantino.
    **/
 
-
   angular.module('matchMedia', []);
-  angular.module('angular-media-queries', ['matchMedia']);
-
+  angular.module('angular-match-media', ['matchMedia']);
 
   angular.module('matchMedia')
     .run(initializeNgMatchMedia)
