@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   /*
@@ -11,10 +11,16 @@
    **/
 
 
-  var app = angular.module('matchMedia', []);
+  angular.module('matchMedia', []);
+  angular.module('angular-media-queries', ['matchMedia']);
 
 
-  app.run(function initializeNgMatchMedia() {
+  angular.module('matchMedia')
+    .run(initializeNgMatchMedia)
+    .service('screenSize', screenSize)
+    .filter('media', mediaFilter);
+
+  function initializeNgMatchMedia() {
     /*! matchMedia() polyfill - Test a CSS media type/query in JS.
      * Authors & copyright (c) 2012: Scott Jehl, Paul Irish, Nicholas Zakas, David Knight.
      * Dual MIT/BSD license
@@ -41,7 +47,7 @@
         info = ('getComputedStyle' in window) && window.getComputedStyle(style, null) || style.currentStyle;
 
         styleMedia = {
-          matchMedium: function(media) {
+          matchMedium: function (media) {
             var text = '@media ' + media + '{ #matchmediajs-test { width: 1px; } }';
 
             // 'style.styleSheet' is used by IE <= 8
@@ -58,19 +64,19 @@
         };
       }
 
-      return function(media) {
+      return function (media) {
         return {
           matches: styleMedia.matchMedium(media || 'all'),
           media: media || 'all'
         };
       };
-    }());
-  });
-
-
+    } ());
+  }   
+  
   // takes a comma-separated list of screen sizes to match.
   // returns true if any of them match.
-  app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
+  screenSize.inject = ['$rootScope'];
+  function screenSize($rootScope) {
 
     var defaultRules = {
       lg: '(min-width: 1200px)',
@@ -82,11 +88,11 @@
     var that = this;
 
     // Executes Angular $apply in a safe way
-    var safeApply = function(fn, scope) {
+    var safeApply = function (fn, scope) {
       scope = scope || $rootScope;
       var phase = scope.$root.$$phase;
       if (phase === '$apply' || phase === '$digest') {
-        if (fn && (typeof(fn) === 'function')) {
+        if (fn && (typeof (fn) === 'function')) {
           fn();
         }
       } else {
@@ -94,7 +100,7 @@
       }
     };
 
-    this.is = function(list) {
+    this.is = function (list) {
       var rules = this.rules || defaultRules;
 
       // validate that we're getting a string or array.
@@ -107,7 +113,7 @@
         list = list.split(/\s*,\s*/);
       }
 
-      return list.some(function(size, index, arr) {
+      return list.some(function (size, index, arr) {
         if (window.matchMedia(rules[size]).matches) {
           return true;
         }
@@ -115,7 +121,7 @@
     };
 
     // Return the actual size (it's string name defined in the rules)
-    this.get = function() {
+    this.get = function () {
       var rules = this.rules || defaultRules;
 
       for (var prop in rules) {
@@ -128,8 +134,8 @@
     // Executes the callback function on window resize with the match truthiness as the first argument.
     // Returns the current match truthiness.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
-    this.on = function(list, callback, scope) {
-      window.addEventListener('resize', function(event) {
+    this.on = function (list, callback, scope) {
+      window.addEventListener('resize', function (event) {
         safeApply(callback(that.is(list)), scope);
       });
 
@@ -138,8 +144,8 @@
 
     // Executes the callback only when inside of the particular screensize.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
-    this.when = function(list, callback, scope) {
-      window.addEventListener('resize', function(event) {
+    this.when = function (list, callback, scope) {
+      window.addEventListener('resize', function (event) {
         if (that.is(list) === true) {
           safeApply(callback(that.is(list)), scope);
         }
@@ -147,24 +153,25 @@
 
       return that.is(list);
     };
-  }]);
+  }
 
-  app.filter('media', ['screenSize', function(screenSize) {
 
-      var mediaFilter = function(inputValue, options) {
+  mediaFilter.inject = ['screenSize'];
+  function mediaFilter(screenSize) {
+    var mediaFilter = function (inputValue, options) {
 
-        // Get actual size
-        var size = screenSize.get();
+      // Get actual size
+      var size = screenSize.get();
 
-        // Variable for the value being return (either a size/rule name or a group name)
-        var returnedName = '';
+      // Variable for the value being return (either a size/rule name or a group name)
+      var returnedName = '';
 
-        if (!options) {
+      if (!options) {
 
-          // Return the size/rule name
-          return size;
+        // Return the size/rule name
+        return size;
 
-        }
+      }
 
       // Replace placeholder with group name in input value
       if (options.groups) {
@@ -190,12 +197,13 @@
         return returnedName;
       }
 
-      };
+    };
 
-      // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
-      // have to explicit define this behavior.
-      mediaFilter.$stateful = true;
-      return mediaFilter;
-  }]);
+    // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
+    // have to explicit define this behavior.
+    mediaFilter.$stateful = true;
+    return mediaFilter;
+  }
+
 
 })();
