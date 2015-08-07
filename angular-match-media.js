@@ -13,21 +13,27 @@
   angular.module('matchMedia', []);
   angular.module('angular-match-media', ['matchMedia']);
 
-  angular.module('matchMedia')
+  angular.module('matchMedia')    
+    .provider('screenSize', screenSizeProvider)
+    .filter('media', mediaFilter)
+    //private
     .run(initializeNgMatchMedia)
-    .service('screenSize', screenSize)
-    .filter('media', mediaFilter);
+    .factory('matchMediaUtils', matchMediaUtilsFactory)
+    .factory('matchMediaListenerStore', matchMediaListenerStoreFactory);
 
-  function initializeNgMatchMedia() {
+  initializeNgMatchMedia.$inject = ['$window'];
+  function initializeNgMatchMedia($window) {
     /*! matchMedia() polyfill - Test a CSS media type/query in JS.
      * Authors & copyright (c) 2012: Scott Jehl, Paul Irish, Nicholas Zakas, David Knight.
      * Dual MIT/BSD license
      **/
 
-    window.matchMedia || (window.matchMedia = function matchMediaPolyfill() {
+    $window.matchMedia || ($window.matchMedia = function matchMediaPolyfill() {
 
       // For browsers that support matchMedium api such as IE 9 and webkit
-      var styleMedia = (window.styleMedia || window.media);
+      var styleMedia = $window.styleMedia || window.media,
+        document = $window.document;
+
 
       // For those that don't support matchMedium
       if (!styleMedia) {
@@ -42,7 +48,7 @@
 
         // 'style.currentStyle' is used by IE <= 8
         // 'window.getComputedStyle' for all other browsers
-        info = ('getComputedStyle' in window) && window.getComputedStyle(style, null) || style.currentStyle;
+        info = ('getComputedStyle' in $window) && $window.getComputedStyle(style, null) || style.currentStyle;
 
         styleMedia = {
           matchMedium: function (media) {
@@ -69,38 +75,179 @@
         };
       };
     } ());
-  }   
-  
-  // takes a comma-separated list of screen sizes to match.
-  // returns true if any of them match.
-  screenSize.inject = ['$rootScope'];
-  function screenSize($rootScope) {
+  }
 
-    var defaultRules = {
-      lg: '(min-width: 1200px)',
-      md: '(min-width: 992px) and (max-width: 1199px)',
-      sm: '(min-width: 768px) and (max-width: 991px)',
-      xs: '(max-width: 767px)'
+  // takes a comma-separated list of screen sizes to match.
+  // returns true if any of them match.    
+  function screenSizeProvider() {
+    angular.extend(this, {
+      defaultRules: {
+        lg: '(min-width: 1200px)',
+        md: '(min-width: 992px) and (max-width: 1199px)',
+        sm: '(min-width: 768px) and (max-width: 991px)',
+        xs: '(max-width: 767px)'
+      },
+
+      $get: getScreenSizeProviderService
+    });
+  }
+
+  getScreenSizeProviderService.$inject = ['$rootScope', '$window', 'matchMediaUtils', 'matchMediaListenerStore'];
+  function getScreenSizeProviderService($rootScope, $window, matchMediaUtils, matchMediaListenerStore) {
+    var context = this;
+
+    return {
+      is: defaultIs,
+      get: defaultGet,
+      on: defaultOn,
+      when: defaultWhen,
+      destroy: defaultDestroy,
+
+      rules: context.defaultRules
+    }
+
+    function defaultIs(list) {
+      var rules = this.rules,
+        list = matchMediaUtils.parseMediaList(list);
+
+      return list.some(function (size, index, arr) {
+        return $window.matchMedia(rules[size]).matches;
+      });
     };
 
-    var that = this;
+    // Return the actual size (it's string name defined in the rules)
+    function defaultGet() {
+      var rules = this.rules;
 
-    // Executes Angular $apply in a safe way
-    var safeApply = function (fn, scope) {
-      scope = scope || $rootScope;
-      var phase = scope.$root.$$phase;
-      if (phase === '$apply' || phase === '$digest') {
-        if (fn && (typeof (fn) === 'function')) {
-          fn();
-        }
-      } else {
-        scope.$apply(fn);
+      return Object.keys(rules).filter(function (key) {
+        return $window.matchMedia(rules[key]).matches;
+      })[0];
+    };
+
+    // Executes the callback function on window resize with the match truthiness as the first argument.
+    // Returns the current match truthiness.
+    // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
+    function defaultOn(list, callback, scope) {
+      var _self = this;
+      
+      matchMediaListenerStore.addListener( onResizeHandler );
+      onResizeHandler();
+      return _self.is(list);
+
+      function onResizeHandler(event) {
+        matchMediaUtils.safeApply(callback(_self.is(list)), scope);
       }
     };
 
-    this.is = function (list) {
-      var rules = this.rules || defaultRules;
+    // Executes the callback only when inside of the particular screensize.
+    // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
+    function defaultWhen(list, callback, scope) {
+      var _self = this;
 
+      matchMediaListenerStore.addListener( whenResizeHandler );
+      whenResizeHandler(); //run the callback the first time
+      return _self.is(list);
+
+      function whenResizeHandler(event) {
+        if (!_self.is(list)) return;
+        matchMediaUtils.safeApply(callback(_self.is(list)), scope);
+      }
+    };
+    
+    function defaultDestroy(){
+      matchMediaListenerStore.destroy();      
+    }
+
+  }
+
+
+  mediaFilter.$inject = ['screenSize'];
+  function mediaFilter(screenSize) {
+    return filterMedia;
+
+    // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
+    // have to explicit define this behavior.
+    filterMedia.$stateful = true;
+    function filterMedia(inputValue, options) {
+      var size = screenSize.get(),  // Get actual size
+        returnedName;          // Variable for the value being return (either a size/rule name or a group name)
+
+      // Return the size/rule name
+      if (!options) return size;
+
+      // Replace placeholder with group name in input value
+      if (options.groups) {
+        var groupName = Object.keys(options.groups).filter(function (key) {
+          return ~options.groups[key].indexOf(size);
+        });
+
+        // If no group name is found for size use the size itself
+        returnedName = (!returnedName) ? groupName[0] : size;
+      }
+
+      // Replace or return size/rule name?
+      if (options.replace && typeof options.replace === 'string' && options.replace.length > 0) {
+        return inputValue.replace(options.replace, returnedName);
+      }
+
+      return returnedName;
+    }
+  }
+  matchMediaListenerStoreFactory.$inject = ['$window', 'matchMediaUtils'];
+  function matchMediaListenerStoreFactory($window, matchMediaUtils){
+    var listeners = [],
+        resizeHandler = matchMediaUtils.debounce(_resizeHandler, 50, true, true);
+    
+    return {
+      addListener: defaultAddListener,
+      removeListener: defaultRemoveListener,
+      destroy: defaultDestroy
+    }
+    
+    function defaultAddListener(callback){
+      $window.addEventListener('resize', resizeHandler, true);
+      
+      this.addListener = function(callback){
+        return listeners.push( callback );       
+      }
+      
+      return this.addListener(callback);
+    }
+    
+    function defaultRemoveListener(reference){
+      if( typeof reference === 'number' ){
+        if( listeners[reference] ) listeners.splice(reference, 1);
+      }
+      
+      if( typeof reference === 'function' ){
+        listeners = listeners.filter(function(value){
+        return reference !== value;
+      });
+      }      
+    }
+    
+    function defaultDestroy(){ 
+      listeners = null;
+      $window.removeEventListener('resize', resizeHandler);
+      this.addListener = defaultAddListener; // if addListener was overwritten outside of this provider, this would undo that overwrite.
+    }    
+    
+    function _resizeHandler(e){
+      listeners.forEach(function(v){
+        v.apply(null,arguments);
+      });
+    }
+  }
+
+  matchMediaUtilsFactory.$inject = ['$rootScope', '$timeout'];
+  function matchMediaUtilsFactory($rootScope, $timeout) {
+    return {
+      parseMediaList: defaultParseMediaList,
+      debounce: defaultDebounce,
+      safeApply: defaultSafeApply
+    };
+
+    function defaultParseMediaList(list) {          
       // validate that we're getting a string or array.
       if (typeof list !== 'string' && Object.prototype.toString.call(list) === '[object Array]') {
         throw new Error('screenSize requires array or comma-separated list');
@@ -111,97 +258,43 @@
         list = list.split(/\s*,\s*/);
       }
 
-      return list.some(function (size, index, arr) {
-        if (window.matchMedia(rules[size]).matches) {
-          return true;
-        }
-      });
-    };
+      return list;
+    }
 
-    // Return the actual size (it's string name defined in the rules)
-    this.get = function () {
-      var rules = this.rules || defaultRules;
+    function defaultDebounce(callback, delay, callBeforeDelay, recallable) {
+      var _self = this,
+        delay = delay || 250,
+        callBeforeDelay = callBeforeDelay || false,
+        recallable = recallable || false,
+        timeout, recall;
 
-      for (var prop in rules) {
-        if (window.matchMedia(rules[prop]).matches) {
-          return prop;
-        }
-      }
-    };
+      return function () {
+        recall = timeout && callBeforeDelay && recallable;
 
-    // Executes the callback function on window resize with the match truthiness as the first argument.
-    // Returns the current match truthiness.
-    // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
-    this.on = function (list, callback, scope) {
-      window.addEventListener('resize', function (event) {
-        safeApply(callback(that.is(list)), scope);
-      });
+        if (timeout) $timeout.cancel(timeout);
+        else if (callBeforeDelay) callback.apply(_self, arguments);
 
-      return that.is(list);
-    };
-
-    // Executes the callback only when inside of the particular screensize.
-    // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
-    this.when = function (list, callback, scope) {
-      window.addEventListener('resize', function (event) {
-        if (that.is(list) === true) {
-          safeApply(callback(that.is(list)), scope);
-        }
-      });
-
-      return that.is(list);
-    };
-  }
-
-
-  mediaFilter.inject = ['screenSize'];
-  function mediaFilter(screenSize) {
-    var mediaFilter = function (inputValue, options) {
-
-      // Get actual size
-      var size = screenSize.get();
-
-      // Variable for the value being return (either a size/rule name or a group name)
-      var returnedName = '';
-
-      if (!options) {
-
-        // Return the size/rule name
-        return size;
-
+        timeout = $timeout(delayedApply, delay);
       }
 
-      // Replace placeholder with group name in input value
-      if (options.groups) {
-
-        for (var prop in options.groups) {
-          var index = options.groups[prop].indexOf(size);
-          if (index >= 0) {
-            returnedName = prop;
-          }
-        }
-
-        // If no group name is found for size use the size itself
-        if (returnedName === '') {
-          returnedName = size;
-        }
-
+      function delayedApply() {
+        if (!callBeforeDelay || recall) callback.apply(_self, arguments);
+        timeout = recall = null;
       }
+    }
 
-      // Replace or return size/rule name?
-      if (options.replace && typeof options.replace === 'string' && options.replace.length > 0) {
-        return inputValue.replace(options.replace, returnedName);
+    // Executes Angular $apply in a safe way
+    function defaultSafeApply(fn, scope) {
+      scope = scope || $rootScope;
+      var phase = scope.$root.$$phase;
+      if (phase === '$apply' || phase === '$digest') {
+        if (fn && (typeof (fn) === 'function')) {
+          fn();
+        }
       } else {
-        return returnedName;
+        scope.$apply(fn);
       }
-
-    };
-
-    // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
-    // have to explicit define this behavior.
-    mediaFilter.$stateful = true;
-    return mediaFilter;
+    }
   }
-
 
 })();
