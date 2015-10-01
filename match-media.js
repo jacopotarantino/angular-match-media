@@ -94,9 +94,7 @@
       }
     };
 
-    this.is = function(list) {
-      var rules = this.rules || defaultRules;
-
+    var AssureList = function(list) {
       // validate that we're getting a string or array.
       if (typeof list !== 'string' && Object.prototype.toString.call(list) === '[object Array]') {
         throw new Error('screenSize requires array or comma-separated list');
@@ -106,23 +104,25 @@
       if (typeof list === 'string') {
         list = list.split(/\s*,\s*/);
       }
+      return list;
+    }
 
-      return list.some(function(size, index, arr) {
-        if (window.matchMedia(rules[size]).matches) {
-          return true;
-        }
-      });
-    };
-
-    // Return the actual size (it's string name defined in the rules)
-    this.get = function() {
-      var rules = this.rules || defaultRules;
-
-      for (var prop in rules) {
-        if (window.matchMedia(rules[prop]).matches) {
-          return prop;
+    var currentMatch;
+    var setCurrentMatch = function() {
+      var rules = that.rules || defaultRules;
+      for (var property in rules) {
+        if (rules.hasOwnProperty(property)) {
+          if (window.matchMedia(rules[property]).matches) {
+            currentMatch = property;
+          }
         }
       }
+    };
+
+    this.is = function(list) {
+      setCurrentMatch();
+      list = AssureList(list);
+      return list.indexOf(currentMatch) !== -1;
     };
 
     // Executes the callback function on window resize with the match truthiness as the first argument.
@@ -131,6 +131,32 @@
     this.on = function(list, callback, scope) {
       window.addEventListener('resize', function(event) {
         safeApply(callback(that.is(list)), scope);
+      });
+
+      return that.is(list);
+    };
+
+    // Executes the callback function ONLY when the match differs from previous match.
+    // Returns the current match truthiness.
+    // The 'scope' parameter is required for cleanup reasons (destroy event).
+    this.onChange = function(scope, list, callback) {
+
+      if (!scope) {
+        throw 'scope has to be applied for cleanup reasons. (destroy)';
+      }
+
+      var listenerFunc = function(event) {
+        var previousMatch = currentMatch;
+        var isMatch = that.is(list);
+        if (previousMatch !== currentMatch) {
+          safeApply(callback(isMatch), scope);
+        }
+      };
+
+      window.addEventListener('resize', listenerFunc);
+
+      scope.$on('$destroy', function() {
+        window.removeEventListener('resize', listenerFunc);
       });
 
       return that.is(list);
