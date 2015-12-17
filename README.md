@@ -12,7 +12,7 @@ bower install --save angular-media-queries
 Include AngularJS on the page and then include this script. If possible, include these scripts in the footer of your site before the closing `</body>` tag.
 ```html
 <script type='text/javascript' src='/static/path/to/angular.min.js'></script>
-<script type='text/javascript' src='/static/path/to/angular-match-media/match-media.js'></script>
+<script type='text/javascript' src='/static/path/to/angular-media-queries/match-media.js'></script>
 ```
 
 ## Usage
