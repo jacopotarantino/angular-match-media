@@ -3,7 +3,7 @@
 
   /*
    * Angular matchMedia Module
-   * Version 0.4.1
+   * Version 0.5.0
    * Uses Bootstrap 3 breakpoint sizes
    * Exposes service "screenSize" which returns true if breakpoint(s) matches.
    * Includes matchMedia polyfill for backward compatibility.
@@ -177,24 +177,20 @@
 
   app.filter('media', ['screenSize', function(screenSize) {
 
-      var mediaFilter = function(inputValue, options) {
+    var mediaFilter = function(inputValue, options) {
+      // Get actual size
+      var size = screenSize.get();
 
-        // Get actual size
-        var size = screenSize.get();
+      // Variable for the value being return (either a size/rule name or a group name)
+      var returnedName = '';
 
-        // Variable for the value being return (either a size/rule name or a group name)
-        var returnedName = '';
-
-        if (!options) {
-
-          // Return the size/rule name
-          return size;
-
-        }
+      if (!options) {
+        // Return the size/rule name
+        return size;
+      }
 
       // Replace placeholder with group name in input value
       if (options.groups) {
-
         for (var prop in options.groups) {
           var index = options.groups[prop].indexOf(size);
           if (index >= 0) {
@@ -206,7 +202,6 @@
         if (returnedName === '') {
           returnedName = size;
         }
-
       }
 
       // Replace or return size/rule name?
@@ -215,13 +210,12 @@
       } else {
         return returnedName;
       }
+    };
 
-      };
-
-      // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
-      // have to explicit define this behavior.
-      mediaFilter.$stateful = true;
-      return mediaFilter;
+    // Since AngularJS 1.3, filters which are not stateless (depending at the scope)
+    // have to explicit define this behavior.
+    mediaFilter.$stateful = true;
+    return mediaFilter;
   }]);
 
 })();
