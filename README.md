@@ -48,7 +48,8 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
-Or if you only want the callback to fire while in the correct screensize, use the `when` method:
+####When
+If you only want the callback to fire while in the correct screensize, use the `when` method:
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
