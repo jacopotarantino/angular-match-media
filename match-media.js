@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   /*
@@ -41,7 +41,7 @@
         info = ('getComputedStyle' in window) && window.getComputedStyle(style, null) || style.currentStyle;
 
         styleMedia = {
-          matchMedium: function(media) {
+          matchMedium: function (media) {
             var text = '@media ' + media + '{ #matchmediajs-test { width: 1px; } }';
 
             // 'style.styleSheet' is used by IE <= 8
@@ -58,7 +58,7 @@
         };
       }
 
-      return function(media) {
+      return function (media) {
         return {
           matches: styleMedia.matchMedium(media || 'all'),
           media: media || 'all'
@@ -67,10 +67,12 @@
     }());
   });
 
+  //Service to use in controllers
+  app.service('screenSize', screenSize);
 
-  // takes a comma-separated list of screen sizes to match.
-  // returns true if any of them match.
-  app.service('screenSize', ["$rootScope", function screenSize($rootScope) {
+  screenSize.$inject = ['$rootScope'];
+
+  function screenSize($rootScope) {
 
     var defaultRules = {
       lg: '(min-width: 1200px)',
@@ -79,14 +81,19 @@
       xs: '(max-width: 767px)'
     };
 
+    this.isRetina = (
+    	window.devicePixelRatio > 1 ||
+    	(window.matchMedia && window.matchMedia('(-webkit-min-device-pixel-ratio: 1.5),(-moz-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5),(min-resolution: 192dpi),(min-resolution: 2dppx)').matches)
+    );
+
     var that = this;
 
     // Executes Angular $apply in a safe way
-    var safeApply = function(fn, scope) {
+    var safeApply = function (fn, scope) {
       scope = scope || $rootScope;
       var phase = scope.$root.$$phase;
       if (phase === '$apply' || phase === '$digest') {
-        if (fn && (typeof(fn) === 'function')) {
+        if (fn && (typeof (fn) === 'function')) {
           fn();
         }
       } else {
@@ -94,78 +101,87 @@
       }
     };
 
-    var AssureList = function(list) {
-      // validate that we're getting a string or array.
-      if (typeof list !== 'string' && Object.prototype.toString.call(list) === '[object Array]') {
+    // Validates that we're getting a string or array. 
+    // When string: converts string(comma seperated) to an array.
+    var assureList = function (list) {
+
+      if (typeof list !== 'string' && Object.prototype.toString.call(list) !== '[object Array]') {
         throw new Error('screenSize requires array or comma-separated list');
       }
 
-      // if it's a string, convert to array.
-      if (typeof list === 'string') {
-        list = list.split(/\s*,\s*/);
-      }
-      return list;
-    }
+      return typeof list === 'string' ? list.split(/\s*,\s*/) : list;
+    };
 
-    var currentMatch;
-    var setCurrentMatch = function() {
+    var getCurrentMatch = function () {
       var rules = that.rules || defaultRules;
+
       for (var property in rules) {
         if (rules.hasOwnProperty(property)) {
           if (window.matchMedia(rules[property]).matches) {
-            currentMatch = property;
+            return property;
           }
         }
       }
     };
 
-    this.is = function(list) {
-      setCurrentMatch();
-      list = AssureList(list);
-      return list.indexOf(currentMatch) !== -1;
+    this.is = function (list) {
+      list = assureList(list);
+      return list.indexOf(getCurrentMatch()) !== -1;
     };
 
     // Executes the callback function on window resize with the match truthiness as the first argument.
     // Returns the current match truthiness.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
-    this.on = function(list, callback, scope) {
-      window.addEventListener('resize', function(event) {
-        safeApply(callback(that.is(list)), scope);
-      });
+    this.on = function (list, callback, scope) {
+      window.addEventListener('resize', listenerFunc);
+
+      if (scope) {
+        scope.$on('$destroy', function () {
+          window.removeEventListener('resize', listenerFunc);
+        });
+      }
 
       return that.is(list);
+
+      function listenerFunc() {
+        safeApply(callback(that.is(list)), scope);
+      }
     };
 
     // Executes the callback function ONLY when the match differs from previous match.
     // Returns the current match truthiness.
     // The 'scope' parameter is required for cleanup reasons (destroy event).
-    this.onChange = function(scope, list, callback) {
-
+    this.onChange = function (scope, list, callback) {
+      var currentMatch = getCurrentMatch();
+      list = assureList(list);
       if (!scope) {
         throw 'scope has to be applied for cleanup reasons. (destroy)';
       }
 
-      var listenerFunc = function(event) {
-        var previousMatch = currentMatch;
-        var isMatch = that.is(list);
-        if (previousMatch !== currentMatch) {
-          safeApply(callback(isMatch), scope);
-        }
-      };
-
       window.addEventListener('resize', listenerFunc);
 
-      scope.$on('$destroy', function() {
+      scope.$on('$destroy', function () {
         window.removeEventListener('resize', listenerFunc);
       });
 
       return that.is(list);
+
+      function listenerFunc() {
+        var previousMatch = currentMatch;
+        currentMatch = getCurrentMatch();
+
+        var wasPreviousMatch = list.indexOf(previousMatch) !== -1;
+        var doesCurrentMatch = list.indexOf(currentMatch) !== -1;
+        if (wasPreviousMatch !== doesCurrentMatch) {
+          safeApply(callback(doesCurrentMatch), scope);
+        }
+      }
     };
 
     // Executes the callback only when inside of the particular screensize.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
-    this.when = function(list, callback, scope) {
-      window.addEventListener('resize', function(event) {
+    this.when = function (list, callback, scope) {
+      window.addEventListener('resize', function () {
         if (that.is(list) === true) {
           safeApply(callback(that.is(list)), scope);
         }
@@ -173,11 +189,11 @@
 
       return that.is(list);
     };
-  }]);
+  }
 
-  app.filter('media', ['screenSize', function(screenSize) {
+  app.filter('media', ['screenSize', function (screenSize) {
 
-    var mediaFilter = function(inputValue, options) {
+    var mediaFilter = function (inputValue, options) {
       // Get actual size
       var size = screenSize.get();
 
@@ -192,9 +208,11 @@
       // Replace placeholder with group name in input value
       if (options.groups) {
         for (var prop in options.groups) {
-          var index = options.groups[prop].indexOf(size);
-          if (index >= 0) {
-            returnedName = prop;
+          if (options.groups.hasOwnProperty(prop)) {
+            var index = options.groups[prop].indexOf(size);
+            if (index >= 0) {
+              returnedName = prop;
+            }
           }
         }
 
