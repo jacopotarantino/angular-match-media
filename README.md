@@ -24,6 +24,7 @@ angular.module('myApp', ['matchMedia'])
 
 ### In a Controller
 
+#### Is
 Use the service's `is` method to determine if you should perform certain cpu/network-intensive actions. The callback fed to `.on` will execute on every window resize and takes the truthiness of the media query as its first argument.
 ```javascript
 angular.module('myApp', ['matchMedia'])
