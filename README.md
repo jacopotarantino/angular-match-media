@@ -65,6 +65,20 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
+#### When
+If you only want the callback to fire while in the correct screensize, use the `when` method.
+Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
+```javascript
+angular.module('myApp', ['matchMedia'])
+.controller('mainController', ['screenSize', function (screenSize) {
+
+    // Will fire as long as the screen is size between 768px and 991px
+    screenSize.when('sm', function() {
+        console.log('Your screen size at the moment is between 768px and 991px.');
+    });
+}]);
+```
+
 #### OnChange
 The callback fed to `.onChange` will execute on every window resize and takes the truthiness of the media query as its first argument.
 Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
@@ -81,22 +95,14 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
-#### When
-If you only want the callback to fire while in the correct screensize, use the `when` method.
-Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
+#### isRetina
+This will return a boolean to indicate if the current screen is hi-def/retina.
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
-
-    // Will fire as long as the screen is size between 768px and 991px
-    screenSize.when('sm', function() {
-        console.log('Your screen size at the moment is between 768px and 991px.');
-    });
+  $scope.isRetina = screenSize.isRetina;
 }]);
 ```
-
-#### OnChange
-
 
 ### Filter
 
