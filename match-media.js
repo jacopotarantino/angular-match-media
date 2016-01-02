@@ -3,7 +3,7 @@
 
   /*
    * Angular matchMedia Module
-   * Version 0.5.0
+   * Version 0.6.0
    * Uses Bootstrap 3 breakpoint sizes
    * Exposes service "screenSize" which returns true if breakpoint(s) matches.
    * Includes matchMedia polyfill for backward compatibility.
@@ -101,7 +101,7 @@
       }
     };
 
-    // Validates that we're getting a string or array. 
+    // Validates that we're getting a string or array.
     // When string: converts string(comma seperated) to an array.
     var assureList = function (list) {
 
