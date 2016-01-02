@@ -24,12 +24,14 @@ angular.module('myApp', ['matchMedia'])
 
 ### In a Controller
 
-Use the service's `is` method to determine if you should perform certain cpu/network-intensive actions. The callback fed to `.on` will execute on every window resize and takes the truthiness of the media query as its first argument.
+#### Is
+Use the service's `is` method to determine if the screensize matches the given string/array.
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
   var data = complicatedChartData;
 
+  //Determine to either perform cpu/network-intensive actions(desktop) or retrieve a small static image(mobile). 
   if (screenSize.is('xs, sm')) {
     // it's a mobile device so fetch a small image
     $http.post('/imageGenerator', data)
@@ -47,7 +49,25 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
-Or if you only want the callback to fire while in the correct screensize, use the `when` method:
+#### On
+The callback fed to `.on` will execute on every window resize and takes the truthiness of the media query as its first argument.
+Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
+ - Executes the callback function on window resize with the match truthiness as the first argument.
+ - Returns the current match truthiness.
+ - Passing $scope as a third parameter is optional, when not passed it will use $rootScope
+
+```javascript
+angular.module('myApp', ['matchMedia'])
+.controller('mainController', ['screenSize', function (screenSize) {
+  $scope.isMobile = screenSize.on('xs, sm', function(isMatch){
+    $scope.isMobile = isMatch;
+  });
+}]);
+```
+
+#### When
+If you only want the callback to fire while in the correct screensize, use the `when` method.
+Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
@@ -59,7 +79,30 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
-Be careful using either of these methods as `resize` events fire often and can bog down your application if not handled properly.
+#### OnChange
+The callback fed to `.onChange` will execute on every window resize and takes the truthiness of the media query as its first argument.
+Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
+ - Executes the callback function ONLY when the match differs from previous match.
+ - Returns the current match truthiness.
+ - The 'scope' parameter is required for cleanup reasons (destroy event).
+
+```javascript
+angular.module('myApp', ['matchMedia'])
+.controller('mainController', ['screenSize', function (screenSize) {
+  $scope.isMobile = screenSize.onChange('xs, sm', function(isMatch){
+    $scope.isMobile = isMatch;
+  });
+}]);
+```
+
+#### isRetina
+This will return a boolean to indicate if the current screen is hi-def/retina.
+```javascript
+angular.module('myApp', ['matchMedia'])
+.controller('mainController', ['screenSize', function (screenSize) {
+  $scope.isRetina = screenSize.isRetina;
+}]);
+```
 
 ### Filter
 
