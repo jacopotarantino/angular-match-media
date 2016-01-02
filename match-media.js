@@ -7,7 +7,7 @@
    * Uses Bootstrap 3 breakpoint sizes
    * Exposes service "screenSize" which returns true if breakpoint(s) matches.
    * Includes matchMedia polyfill for backward compatibility.
-   * Copyright © 2013-2014 Jack Tarantino.
+   * Copyright © Jack Tarantino <https://jack.ofspades.com>.
    **/
 
 
