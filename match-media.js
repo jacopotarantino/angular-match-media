@@ -123,6 +123,9 @@
         }
       }
     };
+    
+    // Return the actual size (it's string name defined in the rules)
+    this.get = getCurrentMatch;
 
     this.is = function (list) {
       list = assureList(list);
