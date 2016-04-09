@@ -154,7 +154,7 @@
     // Executes the callback function ONLY when the match differs from previous match.
     // Returns the current match truthiness.
     // The 'scope' parameter is required for cleanup reasons (destroy event).
-    this.onChange = function (scope, list, callback) {
+    this.onChange = function (list, callback, scope) {
       var currentMatch = getCurrentMatch();
       list = assureList(list);
       if (!scope) {
@@ -184,13 +184,21 @@
     // Executes the callback only when inside of the particular screensize.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
     this.when = function (list, callback, scope) {
-      window.addEventListener('resize', function () {
+      window.addEventListener('resize', listenerFunc);
+
+      if (scope) {
+        scope.$on('$destroy', function () {
+          window.removeEventListener('resize', listenerFunc);
+        });
+      }
+
+      return that.is(list);
+      
+      function listenerFunc() {
         if (that.is(list) === true) {
           safeApply(callback(that.is(list)), scope);
         }
-      });
-
-      return that.is(list);
+      }
     };
   }
 
