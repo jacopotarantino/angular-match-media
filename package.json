@@ -1,6 +1,6 @@
 {
   "name": "angular-media-queries",
-  "version": "0.5.1",
+  "version": "0.6.1",
   "description": "Angular service to test if a given @media statment is true.",
   "main": "match-media.js",
   "scripts": {
