@@ -31,7 +31,7 @@ angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
   var data = complicatedChartData;
 
-  //Determine to either perform cpu/network-intensive actions(desktop) or retrieve a small static image(mobile). 
+  //Determine to either perform cpu/network-intensive actions(desktop) or retrieve a small static image(mobile).
   if (screenSize.is('xs, sm')) {
     // it's a mobile device so fetch a small image
     $http.post('/imageGenerator', data)
@@ -89,7 +89,7 @@ Be careful using this method as `resize` events fire often and can bog down your
 ```javascript
 angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['screenSize', function (screenSize) {
-  $scope.isMobile = screenSize.onChange('xs, sm', function(isMatch){
+  $scope.isMobile = screenSize.onChange($scope,'xs, sm', function(isMatch){
     $scope.isMobile = isMatch;
   });
 }]);
