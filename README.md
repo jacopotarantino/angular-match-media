@@ -88,8 +88,8 @@ Be careful using this method as `resize` events fire often and can bog down your
 
 ```javascript
 angular.module('myApp', ['matchMedia'])
-.controller('mainController', ['screenSize', function (screenSize) {
-  $scope.isMobile = screenSize.onChange('xs, sm', function(isMatch){
+.controller('mainController', ['$scope', 'screenSize', function ($scope, screenSize) {
+  $scope.isMobile = screenSize.onChange($scope, 'xs, sm', function(isMatch){
     $scope.isMobile = isMatch;
   });
 }]);
