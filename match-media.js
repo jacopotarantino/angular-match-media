@@ -154,7 +154,7 @@
     // Executes the callback function ONLY when the match differs from previous match.
     // Returns the current match truthiness.
     // The 'scope' parameter is required for cleanup reasons (destroy event).
-    this.onChange = function (scope, list, callback) {
+    this.onChange = function (list, callback, scope) {
       var currentMatch = getCurrentMatch();
       list = assureList(list);
       if (!scope) {
