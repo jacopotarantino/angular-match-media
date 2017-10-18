@@ -24,6 +24,15 @@ angular.module('myApp', ['matchMedia'])
 
 ### In a Controller
 
+#### Get
+Use the service's `get` method to get the name of the currently matching media query rule.
+```javascript
+angular.module('myApp', ['matchMedia'])
+.controller('mainController', ['screenSize', function (screenSize) {
+  console.log('Your screen size at the moment matches the "'+screenSize.get()+'" media query rule.');
+}]);
+```
+
 #### Is
 Use the service's `is` method to determine if the screensize matches the given string/array.
 ```javascript
@@ -80,9 +89,10 @@ angular.module('myApp', ['matchMedia'])
 ```
 
 #### OnChange
-The callback fed to `.onChange` will execute on every window resize and takes the truthiness of the media query as its first argument.
+The callback fed to `.onChange` will execute only when a window resize causes the media query to begin matching or to 
+stop matching, and takes the truthiness of the media query as its first argument.
 Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
- - Executes the callback function ONLY when the match differs from previous match.
+ - Executes the callback function ONLY when the true/false state of the match differs from previous state.
  - Returns the current match truthiness.
  - The 'scope' parameter is required for cleanup reasons (destroy event).
 
@@ -91,6 +101,34 @@ angular.module('myApp', ['matchMedia'])
 .controller('mainController', ['$scope', 'screenSize', function ($scope, screenSize) {
   $scope.isMobile = screenSize.onChange($scope, 'xs, sm', function(isMatch){
     $scope.isMobile = isMatch;
+  });
+}]);
+```
+
+#### OnRuleChange
+The callback fed to `.onRuleChange` will execute only when a window resize causes the matching media query rule to change, 
+and takes the name of the matched rule as its first argument.  Depending on your needs, using this method can be more
+efficient than registering multiple `.onChange` handlers.
+Be careful using this method as `resize` events fire often and can bog down your application if not handled properly.
+ - Executes the callback function ONLY when the name of the matched rule differs from previous matched rule.
+ - Returns the current rule name.
+ - The 'scope' parameter is required for cleanup reasons (destroy event).
+
+```javascript
+angular.module('myApp', ['matchMedia'])
+.controller('mainController', ['$scope', 'screenSize', function ($scope, screenSize) {
+  $scope.screenSizeName = screenSize.onRuleChange($scope, function(ruleName){
+    switch (ruleName) {
+      case 'xs':
+        // do something special
+        break;
+      case 'sm':
+        // do something else special
+        break;
+      default:
+        // do general logic
+        break;
+    }
   });
 }]);
 ```
