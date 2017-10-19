@@ -173,6 +173,29 @@ angular.module('myApp', ['matchMedia'])
 }]);
 ```
 
+`screenSize.rules` contains a copy of the default rules initially, so it is straightforward to
+add to or change the default rules rather than replacing them, if you wish.  Setting
+`screenSize.rules` to `null` will cause `screenSize` to use the default (bootstrap3) rules,
+but does not make them available as a base for further changes; to restore `screenSize.rules`
+to the default value, use `screenSize.restoreDefaultRules()`
+```javascript
+angular.module('myApp', ['matchMedia'])
+.controller('mainController', ['screenSize', function (screenSize) {
+
+  // this removes the lg media query, causing its screen sizes to be lumped in with md
+  delete screenSize.rules.lg;
+  
+  // this reverts the media queries to the bootstrap3 defaults
+  screenSize.rules = null;
+  
+  // this restores screenSize.rules to the default media query values 
+  screenSize.restoreDefaultRules();
+  
+  // this adds a new superJumbo media query, without removing the default rules
+  angular.extend(screenSize.rules, {superJumbo: '(min-width: 2000px)'};
+}]);
+```
+
 ## License
 
 This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/deed.en_US.
