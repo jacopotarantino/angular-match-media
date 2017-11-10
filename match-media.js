@@ -127,6 +127,11 @@
     // Return the actual size (it's string name defined in the rules)
     this.get = getCurrentMatch;
 
+    this.restoreDefaultRules = function () {
+      this.rules = angular.extend({}, defaultRules);
+    };
+    this.restoreDefaultRules();
+
     this.is = function (list) {
       list = assureList(list);
       return list.indexOf(getCurrentMatch()) !== -1;
