@@ -181,6 +181,33 @@
       }
     };
 
+    // Executes the callback function ONLY when the matched rule changes.
+    // Returns the current match rule name.
+    // The 'scope' parameter is required for cleanup reasons (destroy event).
+    this.onRuleChange = function (scope, callback) {
+      var currentMatch = getCurrentMatch();
+      if (!scope) {
+        throw 'scope has to be applied for cleanup reasons. (destroy)';
+      }
+
+      window.addEventListener('resize', listenerFunc);
+
+      scope.$on('$destroy', function () {
+        window.removeEventListener('resize', listenerFunc);
+      });
+
+      return currentMatch;
+
+      function listenerFunc() {
+        var previousMatch = currentMatch;
+        currentMatch = getCurrentMatch();
+
+        if (previousMatch !== currentMatch) {
+          safeApply(callback(currentMatch), scope);
+        }
+      }
+    };
+
     // Executes the callback only when inside of the particular screensize.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
     this.when = function (list, callback, scope) {
