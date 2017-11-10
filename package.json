@@ -1,6 +1,6 @@
 {
   "name": "angular-media-queries",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Angular service to test if a given @media statment is true.",
   "main": "match-media.js",
   "scripts": {
@@ -18,6 +18,9 @@
     "css"
   ],
   "author": "Jack <jack@ofspades.com>",
+  "contributors": [
+    "Joe <joe@ibershoff.com>"
+  ],
   "license": "CC-BY-SA-4.0",
   "bugs": {
     "url": "https://github.com/jacopotarantino/angular-match-media/issues"
