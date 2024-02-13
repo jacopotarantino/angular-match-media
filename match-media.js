@@ -10,6 +10,25 @@
    * Copyright © Jack Tarantino <https://jack.ofspades.com>.
    **/
 
+  const printMediaQuery = window.matchMedia('print');
+
+  /**
+   * Utility function to register a listener function on screen resize
+   * @param {EventListener} listener event handler
+   */
+  function registerListener(listener) {
+    window.addEventListener('resize', listener);
+    printMediaQuery.addEventListener('change', listener);
+  }
+
+  /**
+   * Utility function to unregister a listener function on screen resize
+   * @param {EventListener} listener event handler
+   */
+  function unregisterListener(listener) {
+    window.removeEventListener('resize', listener);
+    printMediaQuery.removeEventListener('change', listener);
+  }
 
   var app = angular.module('matchMedia', []);
 
@@ -86,6 +105,10 @@
     	(window.matchMedia && window.matchMedia('(-webkit-min-device-pixel-ratio: 1.5),(-moz-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5),(min-resolution: 192dpi),(min-resolution: 2dppx)').matches)
     );
 
+    this.isPrinting = function() {
+      return printMediaQuery.matches;
+    };
+
     var that = this;
 
     // Executes Angular $apply in a safe way
@@ -123,7 +146,7 @@
         }
       }
     };
-    
+
     // Return the actual size (it's string name defined in the rules)
     this.get = getCurrentMatch;
 
@@ -141,11 +164,11 @@
     // Returns the current match truthiness.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
     this.on = function (list, callback, scope) {
-      window.addEventListener('resize', listenerFunc);
+      registerListener(listenerFunc);
 
       if (scope) {
         scope.$on('$destroy', function () {
-          window.removeEventListener('resize', listenerFunc);
+          unregisterListener(listenerFunc);
         });
       }
 
@@ -166,10 +189,10 @@
         throw 'scope has to be applied for cleanup reasons. (destroy)';
       }
 
-      window.addEventListener('resize', listenerFunc);
+      registerListener(listenerFunc);
 
       scope.$on('$destroy', function () {
-        window.removeEventListener('resize', listenerFunc);
+        unregisterListener(listenerFunc);
       });
 
       return that.is(list);
@@ -195,10 +218,10 @@
         throw 'scope has to be applied for cleanup reasons. (destroy)';
       }
 
-      window.addEventListener('resize', listenerFunc);
+      registerListener(listenerFunc);
 
       scope.$on('$destroy', function () {
-        window.removeEventListener('resize', listenerFunc);
+        unregisterListener(listenerFunc);
       });
 
       return currentMatch;
@@ -216,16 +239,16 @@
     // Executes the callback only when inside of the particular screensize.
     // The 'scope' parameter is optional. If it's not passed in, '$rootScope' is used.
     this.when = function (list, callback, scope) {
-      window.addEventListener('resize', listenerFunc);
+      registerListener(listenerFunc);
 
       if (scope) {
         scope.$on('$destroy', function () {
-          window.removeEventListener('resize', listenerFunc);
+          unregisterListener(listenerFunc);
         });
       }
 
       return that.is(list);
-      
+
       function listenerFunc() {
         if (that.is(list) === true) {
           safeApply(callback(that.is(list)), scope);
