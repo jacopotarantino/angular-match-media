@@ -11,6 +11,13 @@ $matchMedia = {
 }
 ```
 
+Notably features are:
+
+* Automatic setup (you only need to load the AngularJS module)
+* Automatically sets and updates `$matchMedia` in `$rootScope`
+* Properly detects print events and synchronizes AngularJS
+* Reports light-dark color schemes
+
 This project improves on jacopotarantino's excellent [angular-match-media](https://github.com/jacopotarantino/angular-match-media) library in various ways:
 
 * Improved performance (code doesn't rely on `resize` events)
